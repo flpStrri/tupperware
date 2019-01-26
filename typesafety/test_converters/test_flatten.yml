@@ -1,0 +1,136 @@
+- case: flatten_io
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.io import IO
+
+    reveal_type(flatten(IO(IO(1))))  # N: Revealed type is 'returns.io.IO[builtins.int*]'
+
+
+- case: flatten_maybe
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.maybe import Some
+
+    reveal_type(flatten(Some(Some(1))))  # N: Revealed type is 'returns.maybe.Maybe[builtins.int*]'
+
+
+- case: flatten_result1
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.result import Result
+
+    def returns_result() -> Result[Result[int, str], str]:
+        ...
+
+    reveal_type(flatten(returns_result()))  # N: Revealed type is 'returns.result.Result[builtins.int*, builtins.str*]'
+
+
+- case: flatten_result2
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.result import Result
+
+    def returns_result() -> Result[int, Result[int, str]]:
+        ...
+
+    flatten(returns_result())
+  out: |
+    main:7: error: Argument 1 to "_flatten" has incompatible type "Result[int, Result[int, str]]"; expected "Result[Result[<nothing>, Result[int, str]], Result[int, str]]"
+
+
+- case: flatten_ioresult1
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.io import IOResult
+
+    def returns_ioresult() -> IOResult[IOResult[int, str], str]:
+        ...
+
+    reveal_type(flatten(returns_ioresult()))  # N: Revealed type is 'returns.io.IOResult[builtins.int*, builtins.str*]'
+
+
+- case: flatten_ioresult2
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.io import IOResult
+
+    def returns_ioresult() -> IOResult[int, IOResult[int, str]]:
+        ...
+
+    flatten(returns_ioresult())
+  out: |
+    main:7: error: Argument 1 to "_flatten" has incompatible type "IOResult[int, IOResult[int, str]]"; expected "IOResult[IOResult[<nothing>, IOResult[int, str]], IOResult[int, str]]"
+
+
+- case: flatten_context
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.context import RequiresContext
+
+    x: RequiresContext[str, RequiresContext[str, int]]
+
+    reveal_type(flatten(x))  # N: Revealed type is 'returns.context.requires_context.RequiresContext[builtins.str*, builtins.int*]'
+
+
+- case: flatten_context_result
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.context import RequiresContextResult
+
+    x: RequiresContextResult[str, RequiresContextResult[str, int, float], float]
+
+    reveal_type(flatten(x))  # N: Revealed type is 'returns.context.requires_context_result.RequiresContextResult[builtins.str*, builtins.int*, builtins.float*]'
+
+
+- case: flatten_context_ioresult
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.context import RequiresContextIOResult
+
+    x: RequiresContextIOResult[str, RequiresContextIOResult[str, int, float], float]
+
+    reveal_type(flatten(x))  # N: Revealed type is 'returns.context.requires_context_ioresult.RequiresContextIOResult[builtins.str*, builtins.int*, builtins.float*]'
+
+
+- case: flatten_future
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.future import Future
+
+    x: Future[Future[int]]
+
+    reveal_type(flatten(x))  # N: Revealed type is 'returns.future.Future[builtins.int*]'
+
+
+- case: flatten_futureresult1
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.future import FutureResult
+
+    x: FutureResult[FutureResult[int, str], str]
+
+    reveal_type(flatten(x))  # N: Revealed type is 'returns.future.FutureResult[builtins.int*, builtins.str*]'
+
+
+- case: flatten_futureresult2
+  disable_cache: true
+  main: |
+    from returns.converters import flatten
+    from returns.future import FutureResult
+
+    x: FutureResult[int, FutureResult[int, str]]
+
+    flatten(x)
+  out: |
+    main:6: error: Argument 1 to "_flatten" has incompatible type "FutureResult[int, FutureResult[int, str]]"; expected "FutureResult[FutureResult[<nothing>, FutureResult[int, str]], FutureResult[int, str]]"
