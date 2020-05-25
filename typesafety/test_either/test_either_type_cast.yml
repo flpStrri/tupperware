@@ -1,0 +1,89 @@
+- case: either_right_cast
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Right
+
+    first: Either[int, Exception] = Right(1)
+    reveal_type(first)  # N: Revealed type is 'tupperware.either.Either[builtins.int, builtins.Exception]'
+
+
+- case: either_left_cast1
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Left
+
+    first: Either[int, Exception] = Left(Exception())
+    reveal_type(first)  # N: Revealed type is 'tupperware.either.Either[builtins.int, builtins.Exception]'
+
+
+- case: either_left_cast2
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Left
+
+    first: Either[int, Exception] = Left(TypeError())
+    reveal_type(first)  # N: Revealed type is 'tupperware.either.Either[builtins.int, builtins.Exception]'
+
+
+- case: either_from_value
+  disable_cache: true
+  main: |
+    from tupperware.either import Either
+
+    reveal_type(Either.from_value(1))  # N: Revealed type is 'tupperware.either.Either[builtins.int*, Any]'
+
+
+- case: either_from_left
+  disable_cache: true
+  main: |
+    from tupperware.either import Either
+
+    reveal_type(Either.from_failure(1))  # N: Revealed type is 'tupperware.either.Either[Any, builtins.int*]'
+
+
+- case: either_covariant_cast
+  disable_cache: true
+  main: |
+    from tupperware.either import Either
+
+    first: Either[TypeError, ValueError]  # we cast both values
+    second: Either[Exception, Exception] = first
+    reveal_type(second)  # N: Revealed type is 'tupperware.either.Either[builtins.Exception, builtins.Exception]'
+
+
+- case: either_right_bind_contra1
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Right
+
+    def test(some: int) -> Either[float, str]:
+      ...
+
+    first: Either[int, str] = Right(4)
+    reveal_type(first.bind(test))  # N: Revealed type is 'tupperware.either.Either[builtins.float*, builtins.str]'
+
+
+- case: either_right_bind_contra2
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Right
+
+    def test(some: int) -> Either[int, ValueError]:
+      ...
+
+    first: Either[int, Exception]
+    second = first.bind(test)
+    reveal_type(second)  # N: Revealed type is 'tupperware.either.Either[builtins.int*, builtins.Exception]'
+
+
+- case: either_correct_usage
+  disable_cache: true
+  main: |
+    from tupperware.either import Either, Right, Left
+
+    def factory(inner_value: int) -> Either[int, str]:
+        if inner_value > 0:
+            return Right(inner_value * 2)
+        return Left(str(inner_value))
+
+    reveal_type(factory(1))  # N: Revealed type is 'tupperware.either.Either[builtins.int, builtins.str]'

@@ -1,0 +1,40 @@
+- case: left_map
+  disable_cache: true
+  main: |
+    from tupperware.either import Left, Either
+
+    reveal_type(Left(1).map(str))  # N: Revealed type is 'tupperware.either.Either[builtins.str*, builtins.int]'
+
+- case: left_bind
+  disable_cache: true
+  main: |
+    from tupperware.either import Left, Either
+
+    def returns_either(param: int) -> Either[str, str]:
+        ...
+
+    first: Either[int, str] = Left("T")
+    reveal_type(first.bind(returns_either))  # N: Revealed type is 'tupperware.either.Either[builtins.str*, builtins.str]'
+
+
+- case: is_right_test
+  disable_cache: true
+  main: |
+    from tupperware.either import Left
+
+    reveal_type(Left(1).is_right)  # N: Revealed type is 'builtins.bool'
+
+
+- case: is_left_test
+  disable_cache: true
+  main: |
+    from tupperware.either import Left
+
+    reveal_type(Left(1).is_left)  # N: Revealed type is 'builtins.bool'
+
+- case: value_test
+  disable_cache: true
+  main: |
+    from tupperware.either import Left
+
+    reveal_type(Left(1).value)  # N: Revealed type is 'Union[Any, builtins.int*]'

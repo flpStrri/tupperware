@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
@@ -21,31 +21,15 @@ jobs:
         curl -sSL \
           "https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py" | python
 
-    - name: Set up cache
+    - name: Cache poetry modules
       uses: actions/cache@v1
+      env:
+        cache-name: cache-poetry-modules
       with:
-        path: .venv
-        key: venv-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-    - name: Install dependencies
-      run: |
-        source "$HOME/.poetry/env"
-
-        poetry config virtualenvs.in-project true
-        poetry install
+        path: ~/.cache/pypoetry
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     - name: Run tests
       run: |
         source "$HOME/.poetry/env"
-
-        poetry run flake8 .
-        poetry run mypy returns ./tests/**/*.py
-        poetry run pytest . docs/pages
-        poetry run doc8 -q docs
-        poetry run poetry check
-        poetry run pip check
-        poetry run safety check --bare --full-report
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
+        make test

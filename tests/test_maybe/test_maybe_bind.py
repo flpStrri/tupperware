@@ -1,24 +1,31 @@
-from returns.maybe import Maybe, Nothing, Some
+from random import choice
+from typing import Callable
+
+from tupperware.maybe import Just, Maybe, Nothing
 
 
-def test_bind_some():
-    """Ensures that left identity works for Some container."""
-    def factory(inner_value: int) -> Maybe[int]:
-        return Some(inner_value * 2)
+def test_should_return_just_when_binding_just_given_function_returning_just():
+    just_one = Just(1)
 
-    input_value = 5
-    bound = Some(input_value).bind(factory)
+    just_add_one: Callable[[int], Maybe[int]] = lambda to_sum: Just(to_sum + 1)
 
-    assert bound == factory(input_value)
-    assert str(bound) == '<Some: 10>'
+    assert just_one.bind(just_add_one) == Just(2)
+    assert just_one | just_add_one == Just(2)
 
 
-def test_bind_nothing():
-    """Ensures that left identity works for Nothing container."""
-    def factory(inner_value) -> Maybe[int]:
-        return Some(1)
+def test_should_return_nothing_when_binding_just_given_function_returning_nothing():
+    just_one = Just(1)
 
-    bound = Nothing.bind(factory)
+    make_nothing: Callable[[int], Maybe[int]] = lambda _: Nothing()
 
-    assert bound == Nothing
-    assert str(bound) == '<Nothing>'
+    assert just_one.bind(make_nothing) == Nothing()
+    assert just_one | make_nothing == Nothing()
+
+
+def test_should_return_the_same_nothing_when_binding_nothing_given_function_returning_just_or_nothing():
+    nothing = Nothing()
+
+    just_add_one: Callable[[int], Maybe[int]] = lambda to_sum: choice([Just(to_sum + 1), Nothing()])
+
+    assert nothing.bind(just_add_one) == Nothing()
+    assert nothing | just_add_one == Nothing()
